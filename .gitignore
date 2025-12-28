@@ -1,0 +1,28 @@
+# --- DADOS PESSOAIS (CRÍTICO) ---
+# Ignora qualquer arquivo dentro de data/raw exceto o .gitkeep
+data/raw/*
+!data/raw/.gitkeep
+
+# Ignora dados processados e vetores
+data/processed/*
+!data/processed/.gitkeep
+data/qdrant_db/*
+!data/qdrant_db/.gitkeep
+data/reports/*
+!data/reports/.gitkeep
+data/cache/*
+
+# --- AMBIENTE PYTHON ---
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# --- ARQUIVOS DO SISTEMA/IDE ---
+.DS_Store
+.vscode/
+.idea/
+*.log
+
+# --- OUTROS ---
+.env
