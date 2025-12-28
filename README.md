@@ -27,7 +27,7 @@ Uma ferramenta completa de **RAG (Retrieval-Augmented Generation)** local para a
 
 1.  **Clone o repositório:**
     ```bash
-    git clone [https://github.com/fastphoenixx/whatsapp-ai-analyzer](https://github.com/fastphoenixx/whatsapp-ai-analyzer)
+    git clone https://github.com/fastphoenixx/whatsapp-ai-analyzer
     cd whatsapp-ai-analyzer
     ```
 
