@@ -1,77 +1,24 @@
-# 🤖 WhatsApp AI Analyzer
-
-Uma ferramenta completa de **RAG (Retrieval-Augmented Generation)** local para análise de grupos de WhatsApp. Transforma históricos de conversa em insights, gráficos e um chat interativo com IA.
-
-![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
-![Streamlit](https://img.shields.io/badge/Interface-Streamlit-red)
-![AI](https://img.shields.io/badge/Model-DeepSeek%20R1-purple)
-![Privacy](https://img.shields.io/badge/Privacy-100%25%20Local-green)
-
-## ✨ Funcionalidades
-
-* **🕵️ Ingestão Inteligente:** Processa arquivos `.txt` exportados do WhatsApp (Android/iOS).
-* **🧠 RAG Local:** Usa **Qdrant** para busca semântica e **DeepSeek R1** (via Ollama) para raciocínio.
-* **📊 Dashboard Visual:**
-    * Rede de Interações (Quem fala com quem).
-    * Timeline de Sentimento (Humor do grupo ao longo do tempo).
-    * Nuvem de Palavras e Estatísticas de hardware em tempo real.
-* **⚡ Otimizado:** Configurado para rodar liso em GPUs com 8GB VRAM (testado em AMD RX 6600 XT).
-
-## 🛠️ Pré-requisitos
-
-1.  **Python 3.10+**
-2.  **Ollama** instalado e rodando.
-3.  **GPU** recomendada (funciona em CPU, mas é lento).
-
-## 🚀 Instalação
-
-1.  **Clone o repositório:**
-    ```bash
-    git clone https://github.com/fastphoenixx/whatsapp-ai-analyzer
-    cd whatsapp-ai-analyzer
-    ```
-
-2.  **Crie o ambiente virtual:**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # No Windows: venv\Scripts\activate
-    ```
-
-3.  **Instale as dependências:**
-    ```bash
-    pip install -r requirements.txt
-    ```
-    *Nota para usuários AMD:* Certifique-se de instalar o PyTorch com suporte a ROCm.
-
-## 🎮 Como Usar
-
-### 1. Inicie o Servidor Ollama
-Em um terminal separado, inicie o backend da IA.
-*Exemplo para AMD (Linux):*
-```bash
-OLLAMA_FLASH_ATTENTION=0 HSA_OVERRIDE_GFX_VERSION=10.3.0 ollama serve
-
-2. Inicie o Dashboard
-
-No terminal do projeto:
-Bash
-
-streamlit run src/interface/app.py
-
-3. Use a Ferramenta
-
-    Abra o navegador em http://localhost:8501.
-
-    Na barra lateral, faça upload do arquivo _chat.txt (exportado do WhatsApp -> Exportar Conversa -> Sem Mídia).
-
-    Clique em "Iniciar Análise".
-
-📂 Estrutura
-
-    src/ingestion: Parsers de texto e limpeza de dados.
-
-    src/embeddings: Geração de vetores e banco Qdrant.
-
-    src/analysis: Scripts de ciência de dados (Sentimento, Grafos).
-
-    src/interface: Aplicação Web (Streamlit).
+🤖 WhatsApp AI AnalyzerUma ferramenta poderosa de RAG (Retrieval-Augmented Generation) local para análise profunda de conversas de WhatsApp. Transforme arquivos de texto em insights visuais e converse com seus dados usando IA, tudo rodando localmente para garantir privacidade total.✨ Funcionalidades🕵️ Ingestão Inteligente: Processa arquivos _chat.txt exportados do WhatsApp (Android/iOS), limpando logs de sistema e formatando dados.🧠 RAG Local & Privado: Usa Qdrant para vetorização semântica e DeepSeek R1 (via Ollama) para raciocínio complexo sobre as conversas.📊 Dashboard Interativo:Timeline de Sentimento: Analisa o humor do grupo ao longo do tempo.Rede de Interações: Grafo visual mostrando quem responde a quem.Nuvem de Palavras: Termos mais utilizados.Monitoramento de Hardware: Acompanhe o uso de CPU, RAM e GPU (Suporte a AMD ROCm) em tempo real.⚡ Otimizado para GPU: Configurado para rodar eficientemente em GPUs com 8GB VRAM (Testado em AMD Radeon RX 6600 XT).🛠️ Pré-requisitosAntes de começar, certifique-se de ter instalado:Python 3.10+Ollama (Para rodar o modelo de IA).Drivers de GPU (Recomendado para performance, mas funciona em CPU).Linux (AMD): Drivers ROCm instalados.Windows/Linux (NVIDIA): Drivers CUDA.🚀 InstalaçãoClone o repositório:git clone [https://github.com/fastphoenixx/whatsapp-ai-analyzer.git](https://github.com/fastphoenixx/whatsapp-ai-analyzer.git)
+cd whatsapp-ai-analyzer
+Crie e ative um ambiente virtual:python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# venv\Scripts\activate   # Windows
+Instale as dependências:pip install -r requirements.txt
+> Nota para usuários AMD: Certifique-se de instalar a versão do PyTorch compatível com ROCm se quiser aceleração de GPU.Baixe o modelo no Ollama:ollama pull deepseek-r1:8b
+🎮 Como Usar1. Inicie o Servidor OllamaAbra um terminal separado para rodar o backend da IA.Para usuários AMD (Linux/ROCm):OLLAMA_FLASH_ATTENTION=0 HSA_OVERRIDE_GFX_VERSION=10.3.0 ollama serve
+Para usuários NVIDIA ou CPU:ollama serve
+2. Inicie o DashboardNo terminal do projeto (com o venv ativo):streamlit run src/interface/app.py
+3. Acesse e AnaliseO navegador abrirá automaticamente em http://localhost:8501.Na barra lateral, faça o upload do seu arquivo exportado do WhatsApp (_chat.txt).No WhatsApp: Abra a conversa -> Três pontinhos -> Mais -> Exportar conversa -> Sem Mídia.Clique em "Iniciar Análise" e acompanhe o progresso no terminal embutido.📂 Estrutura do Projetowhatsapp-ai-analyzer/
+├── data/                  # Armazenamento local (ignorado pelo Git)
+│   ├── raw/               # Chats brutos
+│   ├── processed/         # Parquet estruturado
+│   └── qdrant_db/         # Banco vetorial
+├── src/
+│   ├── ingestion/         # Parsers e limpeza de texto
+│   ├── embeddings/        # Geração de vetores e Qdrant
+│   ├── analysis/          # Scripts de Sentimento, Grafos e Trends
+│   ├── llm/               # Integração com Ollama
+│   └── interface/         # Frontend Streamlit
+├── requirements.txt       # Dependências do projeto
+└── README.md              # Este arquivo
+🛡️ PrivacidadeEste projeto foi desenhado para ser 100% Local.Nenhum dado das suas conversas sai da sua máquina.Nenhum dado é enviado para APIs de terceiros (como OpenAI ou Google).Tudo é processado na sua RAM/GPU e armazenado na pasta data/ localmente.🤝 ContribuiçãoContribuições são bem-vindas! Sinta-se à vontade para abrir Issues ou Pull Requests para melhorar a análise de sentimentos, adicionar novos gráficos ou suportar novos modelos.Desenvolvido com ❤️ e muita cafeína.
