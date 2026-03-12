@@ -32,7 +32,8 @@ def analyze_sentiment():
     print(colored("🚀 Iniciando Análise de Sentimento (MODO TURBO)...", "cyan"))
     
     # Limpeza prévia
-    torch.cuda.empty_cache()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
     gc.collect()
 
     if not Path(INPUT_FILE).exists():
@@ -43,11 +44,16 @@ def analyze_sentiment():
     df = pd.read_parquet(INPUT_FILE)
     df = df[df['content'].apply(is_valid_message)].copy()
     msgs = df['content'].tolist()
-    print(colored(f"📂 Processando {len(msgs)} mensagens na GPU...", "cyan"))
+    use_gpu = torch.cuda.is_available()
+    device = 0 if use_gpu else -1
+    # float16 only works well on GPU; CPU runs float32
+    dtype = torch.float16 if use_gpu else torch.float32
+    # Larger batches when GPU memory allows; smaller on CPU to stay within RAM
+    batch_size = 256 if use_gpu else 32
 
-    # 2. Setup OTIMIZADO
-    device = 0 if torch.cuda.is_available() else -1
-    
+    print(colored(f"📂 Processando {len(msgs)} mensagens ({'GPU' if use_gpu else 'CPU'})...", "cyan"))
+
+    # 2. Setup
     sentiment_pipeline = pipeline(
         "sentiment-analysis",
         model=MODEL_NAME,
@@ -56,8 +62,8 @@ def analyze_sentiment():
         top_k=None,
         truncation=True,
         max_length=128,
-        torch_dtype=torch.float16,
-        batch_size=256  # <--- AQUI ESTÁ A MÁGICA (Aumentado 8x)
+        torch_dtype=dtype,
+        batch_size=batch_size,
     )
 
     # 3. Inferência Contínua (Sem loop manual lento)

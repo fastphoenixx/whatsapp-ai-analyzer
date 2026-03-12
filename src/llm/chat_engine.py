@@ -1,4 +1,5 @@
 import sys
+import torch
 import ollama
 from qdrant_client import QdrantClient
 from sentence_transformers import SentenceTransformer
@@ -15,7 +16,8 @@ class WhatsAppChat:
         print(colored("⏳ Inicializando componentes...", "yellow"))
         self.client = QdrantClient(path=VECTOR_DB_PATH)
         print(colored("🧠 Carregando modelo de embedding...", "yellow"))
-        self.encoder = SentenceTransformer(EMBEDDING_MODEL, device="cuda")
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.encoder = SentenceTransformer(EMBEDDING_MODEL, device=device)
         print(colored(f"✅ Sistema pronto! Usando: {OLLAMA_MODEL}", "green"))
 
     def get_context(self, query_text, limit=15):
