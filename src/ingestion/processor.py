@@ -5,12 +5,16 @@ import sys
 
 class WhatsAppProcessor:
     def __init__(self):
-        # Regex ajustado para o formato detectado: 2/15/23, 14:20:48
-        self.log_pattern = r'^(\d{1,2}/\d{1,2}/\d{2,4}),\s+(\d{1,2}:\d{2}:\d{2})\s+-\s+(.*?):\s+(.*)$'
-        
+        # Matches date and time (with or without seconds), captures the rest after " - "
+        # Author and message are then split on the first ": " so any character (/, :, etc.)
+        # in the author name is handled correctly.
+        self.log_pattern = re.compile(
+            r'^(\d{1,2}/\d{1,2}/\d{2,4}),\s+(\d{1,2}:\d{2}(?::\d{2})?)\s+-\s+(.+)$'
+        )
+
     def parse_file(self, file_path):
         print(f"📂 Lendo arquivo: {file_path}")
-        
+
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 lines = f.readlines()
@@ -24,19 +28,27 @@ class WhatsAppProcessor:
         buffer_time = ""
         buffer_author = ""
         buffer_message = []
-        
+
         matches_found = 0
 
         for line in lines:
             line = line.strip()
             # Remove caracteres de controle estranhos do WhatsApp
             line = line.replace('\u200e', '').replace('\u200f', '')
-            
+
             if not line: continue
 
-            match = re.match(self.log_pattern, line)
+            match = self.log_pattern.match(line)
 
             if match:
+                date, time_val, rest = match.groups()
+
+                # Skip system messages that have no "author: message" structure
+                if ': ' not in rest:
+                    continue
+
+                author, msg_content = rest.split(': ', 1)
+
                 matches_found += 1
                 if buffer_author:
                     full_msg = " ".join(buffer_message)
@@ -48,9 +60,9 @@ class WhatsAppProcessor:
                             'content': full_msg
                         })
 
-                buffer_date, buffer_time, buffer_author, msg_content = match.groups()
+                buffer_date, buffer_time, buffer_author = date, time_val, author
                 buffer_message = [msg_content]
-            
+
             else:
                 if buffer_author:
                     buffer_message.append(line)

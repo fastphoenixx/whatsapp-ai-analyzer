@@ -48,7 +48,7 @@ def build_vector_store(parquet_path):
         )
     )
 
-    print("⚡ Gerando embeddings e indexando (Isso usa a GPU)...")
+    print("⚡ Gerando embeddings e indexando...")
     
     total_batches = len(documents) // BATCH_SIZE + 1
     

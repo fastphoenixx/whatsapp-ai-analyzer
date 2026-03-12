@@ -51,9 +51,9 @@ PARQUET_PATH = DATA_PROCESSED / "chat_history.parquet"
 
 # --- MONITORAMENTO ---
 def get_hw_metrics():
-    metrics = {'cpu': psutil.cpu_percent(), 'ram': psutil.virtual_memory().percent, 'gpu_load': 0, 'gpu_temp': 0}
+    metrics = {'cpu': psutil.cpu_percent(), 'ram': psutil.virtual_memory().percent, 'gpu_load': None, 'gpu_temp': None}
     try:
-        res = subprocess.run(['rocm-smi', '--showuse', '--showtemp', '--json'], capture_output=True, text=True)
+        res = subprocess.run(['rocm-smi', '--showuse', '--showtemp', '--json'], capture_output=True, text=True, timeout=2)
         if res.returncode == 0:
             d = json.loads(res.stdout)
             card = list(d.keys())[0]
@@ -76,11 +76,12 @@ def run_pipeline(hw_placeholder):
         # ATUALIZA HARDWARE A CADA LOG (Truque para ser "Live" sem travar)
         hw = get_hw_metrics()
         with hw_placeholder.container():
-             c1, c2 = st.columns(2)
-             c1.metric("GPU Load", f"{hw['gpu_load']}%")
-             c1.metric("Temp", f"{hw['gpu_temp']}°C")
-             c2.metric("CPU", f"{hw['cpu']}%")
-             c2.metric("RAM", f"{hw['ram']}%")
+            c1, c2 = st.columns(2)
+            if hw['gpu_load'] is not None:
+                c1.metric("GPU Load", f"{hw['gpu_load']}%")
+                c1.metric("Temp", f"{hw['gpu_temp']}°C")
+            c2.metric("CPU", f"{hw['cpu']}%")
+            c2.metric("RAM", f"{hw['ram']}%")
 
     try:
         # 1. Ingestão
@@ -96,7 +97,7 @@ def run_pipeline(hw_placeholder):
         log(f"✅ Ingestão: {len(df)} msgs.")
 
         # 2. Vetores
-        log("🧠 [2/5] Vetorização (GPU)...")
+        log("🧠 [2/5] Vetorização...")
         with redirect_stdout(io.StringIO()):
             build_vector_store(str(PARQUET_PATH))
         log("✅ Vetores criados.")
@@ -142,7 +143,8 @@ def reset_session():
     st.session_state.messages = []
     st.session_state.chat_engine = None
     st.session_state.processing_complete = False
-    torch.cuda.empty_cache()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
     gc.collect()
 
 def get_stats(raw, df):
@@ -178,11 +180,12 @@ with st.sidebar:
     if not st.session_state.get("is_processing", False):
         hw = get_hw_metrics()
         with hw_placeholder.container():
-             c1, c2 = st.columns(2)
-             c1.metric("GPU", f"{hw['gpu_load']}%", help="Carga Atual")
-             c1.metric("Temp", f"{hw['gpu_temp']}°C")
-             c2.metric("CPU", f"{hw['cpu']}%")
-             c2.metric("RAM", f"{hw['ram']}%")
+            c1, c2 = st.columns(2)
+            if hw['gpu_load'] is not None:
+                c1.metric("GPU", f"{hw['gpu_load']}%", help="Carga Atual")
+                c1.metric("Temp", f"{hw['gpu_temp']}°C")
+            c2.metric("CPU", f"{hw['cpu']}%")
+            c2.metric("RAM", f"{hw['ram']}%")
     
     st.divider()
     model = st.selectbox("Modelo IA", get_models())
